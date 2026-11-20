@@ -1,0 +1,42 @@
+name: Playwright UI & API Test Suite
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  e2e-and-api-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Install Playwright Chromium browser & OS dependencies
+        run: |
+          playwright install --with-deps chromium
+
+      - name: Run headless Playwright UI & REST API tests
+        run: |
+          pytest
+
+      - name: Upload HTML Test Report & Failure Screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-report
+          path: reports/
+          retention-days: 14
